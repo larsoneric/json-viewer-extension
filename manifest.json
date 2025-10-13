@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "JSON Viewer",
+  "version": "1.0.0",
+  "description": "View and copy escaped JSON strings from network responses with formatting",
+  "devtools_page": "devtools.html",
+  "permissions": [
+    "clipboardWrite"
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

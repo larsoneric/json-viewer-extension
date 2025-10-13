@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JSON Viewer</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+    }
+
+    #requestsList {
+      margin-bottom: 15px;
+    }
+
+    .request-wrapper {
+      margin-bottom: 8px;
+    }
+
+    .request-item {
+      background-color: #252526;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .request-item:hover {
+      background-color: #2a2d2e;
+    }
+
+    .request-item.expanded {
+      background-color: #094771;
+      border-color: #0e639c;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      margin-bottom: 0;
+    }
+
+    .request-expand-indicator {
+      display: inline-block;
+      margin-right: 6px;
+      font-size: 10px;
+      color: #858585;
+      transition: transform 0.2s;
+    }
+
+    .request-item.expanded .request-expand-indicator {
+      transform: rotate(90deg);
+    }
+
+    .request-method {
+      display: inline-block;
+      padding: 2px 6px;
+      background-color: #0e639c;
+      color: white;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .request-url {
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      color: #9cdcfe;
+    }
+
+    .request-count {
+      font-size: 11px;
+      color: #858585;
+      margin-left: 10px;
+    }
+
+    .request-expanded-content {
+      background-color: #1e1e1e;
+      border: 1px solid #0e639c;
+      border-top: none;
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+      padding: 12px;
+      display: none;
+    }
+
+    .request-expanded-content.visible {
+      display: block;
+    }
+
+    .selected-request-header {
+      color: #9cdcfe;
+      font-weight: 500;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: 8px;
+    }
+
+    .selected-request-header:hover {
+      color: #b0dcfe;
+    }
+
+    .request-details {
+      margin-top: 12px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .request-details.expanded {
+      display: block;
+    }
+
+    .request-properties {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .details-section {
+      background-color: #1e1e1e;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .details-section-title {
+      font-size: 11px;
+      color: #9cdcfe;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .header-item,
+    .payload-content {
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 11px;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .header-name {
+      color: #9cdcfe;
+      font-weight: 500;
+    }
+
+    .header-value {
+      color: #ce9178;
+    }
+
+    .expand-indicator {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 10px;
+      color: #858585;
+    }
+
+    #propertiesList {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .property-item {
+      background-color: #252526;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 12px;
+    }
+
+    .property-path {
+      font-family: 'Consolas', 'Monaco', monospace;
+      color: #9cdcfe;
+      font-size: 13px;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+
+    .property-preview {
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      color: #ce9178;
+      background-color: #1e1e1e;
+      padding: 8px;
+      border-radius: 3px;
+      margin-bottom: 10px;
+      max-height: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .property-preview.formatted {
+      white-space: pre-wrap;
+      max-height: none;
+      overflow: auto;
+      word-break: break-word;
+    }
+
+    .property-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      padding: 6px 14px;
+      background-color: #0e639c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    button:hover {
+      background-color: #1177bb;
+    }
+
+    button.format-btn {
+      background-color: #5a5a5a;
+    }
+
+    button.format-btn:hover {
+      background-color: #6a6a6a;
+    }
+
+    button.copy-btn {
+      background-color: #2d7d2d;
+    }
+
+    button.copy-btn:hover {
+      background-color: #3a9d3a;
+    }
+
+    .notification {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 12px 20px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .notification.success {
+      background-color: #2d5a2d;
+      color: #a6e3a6;
+    }
+
+    .notification.error {
+      background-color: #5a1d1d;
+      color: #f48771;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    #emptyState {
+      text-align: center;
+      padding: 40px 20px;
+      color: #858585;
+    }
+
+    #emptyState h3 {
+      margin-top: 0;
+      color: #9cdcfe;
+    }
+
+    .section-header {
+      font-size: 12px;
+      color: #858585;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #252526;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .recording-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .recording-status {
+      font-size: 11px;
+      font-weight: 500;
+      color: #858585;
+    }
+
+    .recording-status.active {
+      color: #4ec9b0;
+    }
+
+    .recording-status.paused {
+      color: #f48771;
+    }
+
+    .record-toggle-btn {
+      background-color: transparent;
+      border: 1px solid #3e3e42;
+      padding: 4px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    .record-toggle-btn:hover {
+      background-color: #2a2d2e;
+      border-color: #0e639c;
+    }
+
+    .record-icon {
+      width: 12px;
+      height: 12px;
+      display: inline-block;
+    }
+
+    .record-icon.recording {
+      color: #4ec9b0;
+    }
+
+    .record-icon.paused {
+      color: #f48771;
+    }
+
+    .clear-btn {
+      background-color: transparent;
+      border: 1px solid #3e3e42;
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+
+    .clear-btn:hover {
+      background-color: #2a2d2e;
+      border-color: #f48771;
+      color: #f48771;
+    }
+
+    .request-limit-select {
+      background-color: #3c3c3c;
+      color: #d4d4d4;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .request-limit-select:hover {
+      border-color: #0e639c;
+    }
+
+    .request-timestamp {
+      font-size: 10px;
+      color: #6a6a6a;
+      margin-left: 10px;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+
+    /* JSON Syntax Highlighting */
+    .json-key {
+      color: #9cdcfe;
+    }
+
+    .json-string {
+      color: #ce9178;
+    }
+
+    .json-number {
+      color: #b5cea8;
+    }
+
+    .json-boolean {
+      color: #569cd6;
+    }
+
+    .json-null {
+      color: #569cd6;
+    }
+  </style>
+</head>
+<body>
+  <div id="emptyState">
+    <h3 data-i18n="emptyStateTitle">Waiting for Network Requests</h3>
+    <p data-i18n="emptyStateDescription">Make network requests in your application. Requests with JSON will appear here.</p>
+  </div>
+
+  <div id="mainContent" style="display: none;">
+    <div class="header-bar">
+      <div class="section-header" data-i18n="recentRequestsHeader">Recent Requests with JSON</div>
+      <div class="recording-controls">
+        <span id="recordingStatus" class="recording-status active" data-i18n="recordingActive">Recording Active</span>
+        <select id="requestLimitSelect" class="request-limit-select">
+          <option value="10">Keep 10</option>
+          <option value="20" selected>Keep 20</option>
+          <option value="50">Keep 50</option>
+          <option value="100">Keep 100</option>
+        </select>
+        <button id="recordToggleBtn" class="record-toggle-btn">
+          <span id="recordIcon" class="record-icon recording">⏸</span>
+          <span id="recordToggleText" data-i18n="pauseRecording">Pause Recording</span>
+        </button>
+        <button id="clearBtn" class="clear-btn" data-i18n="clearButton">Clear</button>
+      </div>
+    </div>
+    <div id="requestsList"></div>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>

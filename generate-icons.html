@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Generate Extension Icons</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #0e639c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1177bb;
+    }
+    .icon-container {
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Generate Extension Icons</h1>
+  <p>Click the button below to generate PNG icons from the SVG. Right-click each icon and "Save image as..." to save them.</p>
+
+  <button onclick="generateIcons()">Generate Icons</button>
+
+  <div id="icons"></div>
+
+  <script>
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="16" fill="#0e639c"/>
+  <text x="64" y="80" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white" text-anchor="middle">
+    { }
+  </text>
+</svg>`;
+
+    function generateIcons() {
+      const sizes = [16, 48, 128];
+      const container = document.getElementById('icons');
+      container.innerHTML = '';
+
+      sizes.forEach(size => {
+        const div = document.createElement('div');
+        div.className = 'icon-container';
+
+        const title = document.createElement('h3');
+        title.textContent = `${size}x${size} (Save as: icon${size}.png)`;
+        div.appendChild(title);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+
+        img.onload = function() {
+          ctx.drawImage(img, 0, 0, size, size);
+
+          // Add download link
+          const link = document.createElement('a');
+          link.textContent = `Download icon${size}.png`;
+          link.download = `icon${size}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.style.display = 'block';
+          link.style.marginTop = '10px';
+          div.appendChild(link);
+        };
+
+        img.src = 'data:image/svg+xml;base64,' + btoa(svgContent);
+
+        div.appendChild(canvas);
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
