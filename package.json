@@ -1,0 +1,30 @@
+{
+  "name": "json-viewer-extension",
+  "version": "1.0.0",
+  "description": "Chrome DevTools extension for viewing and formatting JSON from network responses",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
+  },
+  "keywords": [
+    "chrome-extension",
+    "devtools",
+    "json",
+    "viewer"
+  ],
+  "author": "Eric Larson",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.0.4",
+    "@vitest/ui": "^1.0.4",
+    "jsdom": "^23.0.1",
+    "vitest": "^1.0.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/larsoneric/json-viewer-extension"
+  }
+}

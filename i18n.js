@@ -12,6 +12,7 @@ const translations = {
     pauseRecording: 'Pause Recording',
     resumeRecording: 'Resume Recording',
     clearButton: 'Clear',
+    searchPlaceholder: 'Filter by URL or method...',
 
     // Request list
     property: 'property',
@@ -43,7 +44,7 @@ function t(key, replacements = {}) {
 
   // Replace placeholders like {path}, {error}, etc.
   Object.keys(replacements).forEach(placeholder => {
-    text = text.replace(`{${placeholder}}`, replacements[placeholder]);
+    text = text.replaceAll(`{${placeholder}}`, replacements[placeholder]);
   });
 
   return text;

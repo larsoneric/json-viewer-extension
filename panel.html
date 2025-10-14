@@ -385,6 +385,63 @@
       font-family: 'Consolas', 'Monaco', monospace;
     }
 
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background-color: #252526;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .search-input {
+      flex: 1;
+      background-color: #3c3c3c;
+      color: #d4d4d4;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #0e639c;
+    }
+
+    .search-input::placeholder {
+      color: #858585;
+    }
+
+    .clear-search-btn {
+      background-color: transparent;
+      border: 1px solid #3e3e42;
+      color: #858585;
+      padding: 4px 10px;
+      font-size: 18px;
+      line-height: 1;
+      min-width: 30px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .clear-search-btn.visible {
+      display: block;
+    }
+
+    .clear-search-btn:hover {
+      background-color: #2a2d2e;
+      border-color: #f48771;
+      color: #f48771;
+    }
+
+    .request-wrapper.hidden {
+      display: none;
+    }
+
     /* JSON Syntax Highlighting */
     .json-key {
       color: #9cdcfe;
@@ -408,30 +465,41 @@
   </style>
 </head>
 <body>
-  <div id="emptyState">
+  <div id="emptyState" role="status" aria-live="polite">
     <h3 data-i18n="emptyStateTitle">Waiting for Network Requests</h3>
     <p data-i18n="emptyStateDescription">Make network requests in your application. Requests with JSON will appear here.</p>
   </div>
 
   <div id="mainContent" style="display: none;">
-    <div class="header-bar">
+    <div class="header-bar" role="toolbar" aria-label="Request controls">
       <div class="section-header" data-i18n="recentRequestsHeader">Recent Requests with JSON</div>
       <div class="recording-controls">
-        <span id="recordingStatus" class="recording-status active" data-i18n="recordingActive">Recording Active</span>
-        <select id="requestLimitSelect" class="request-limit-select">
+        <span id="recordingStatus" class="recording-status active" data-i18n="recordingActive" role="status" aria-live="polite">Recording Active</span>
+        <select id="requestLimitSelect" class="request-limit-select" aria-label="Request history limit">
           <option value="10">Keep 10</option>
           <option value="20" selected>Keep 20</option>
           <option value="50">Keep 50</option>
           <option value="100">Keep 100</option>
         </select>
-        <button id="recordToggleBtn" class="record-toggle-btn">
-          <span id="recordIcon" class="record-icon recording">⏸</span>
+        <button id="recordToggleBtn" class="record-toggle-btn" aria-label="Toggle recording">
+          <span id="recordIcon" class="record-icon recording" aria-hidden="true">⏸</span>
           <span id="recordToggleText" data-i18n="pauseRecording">Pause Recording</span>
         </button>
-        <button id="clearBtn" class="clear-btn" data-i18n="clearButton">Clear</button>
+        <button id="clearBtn" class="clear-btn" data-i18n="clearButton" aria-label="Clear all requests">Clear</button>
       </div>
     </div>
-    <div id="requestsList"></div>
+    <div class="search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Filter by URL or method..."
+        data-i18n-placeholder="searchPlaceholder"
+        aria-label="Filter requests by URL or method"
+      />
+      <button id="clearSearchBtn" class="clear-search-btn" aria-label="Clear search" title="Clear search">×</button>
+    </div>
+    <div id="requestsList" role="list" aria-label="Network requests with JSON"></div>
   </div>
 
   <script src="i18n.js"></script>

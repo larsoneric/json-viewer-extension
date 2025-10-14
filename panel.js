@@ -1,17 +1,53 @@
 // Panel logic for JSON Viewer Chrome DevTools extension
+
+// Constants
+const DEFAULT_REQUEST_LIMIT = 20;
+const TRUNCATE_LENGTH = 200;
+const NOTIFICATION_TIMEOUT_MS = 3000;
+const PROCESS_REQUEST_DEBOUNCE_MS = 100;
+
+// State
 let allRequests = []; // Store all requests with escaped JSON
 let isRecording = true; // Start recording by default
 let expandedRequests = new Map(); // Track which requests are expanded (using timestamp as key)
-let requestLimit = 20; // Default limit for stored requests
+let requestLimit = DEFAULT_REQUEST_LIMIT; // Default limit for stored requests
+let lastRenderedCount = 0; // Track how many requests were last rendered for incremental updates
+let searchQuery = ''; // Current search query
+let processRequestTimeout = null; // For debouncing request processing
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-  initializeI18n();
-  setupRecordingToggle();
-  setupClearButton();
-  setupRequestLimitSelect();
-  listenToNetworkRequests();
+  console.log('JSON Viewer panel initialized');
+  try {
+    initializeI18n();
+    setupRecordingToggle();
+    setupClearButton();
+    setupRequestLimitSelect();
+    setupSearchFilter();
+    listenToNetworkRequests();
+    console.log('JSON Viewer setup complete');
+  } catch (err) {
+    console.error('Failed to initialize JSON Viewer:', err);
+    showFatalError(err);
+  }
 });
+
+// Show fatal error UI when initialization fails
+function showFatalError(error) {
+  document.body.innerHTML = `
+    <div style="padding: 20px; text-align: center; color: #f48771;">
+      <h3>❌ JSON Viewer Failed to Initialize</h3>
+      <p style="color: #858585; margin: 10px 0;">An error occurred while loading the extension.</p>
+      <details style="margin-top: 20px; text-align: left; background: #252526; padding: 10px; border-radius: 4px;">
+        <summary style="cursor: pointer; color: #9cdcfe;">Error Details</summary>
+        <pre style="margin-top: 10px; color: #ce9178; font-size: 11px; overflow: auto;">${escapeHtml(error.toString())}\n\n${escapeHtml(error.stack || '')}</pre>
+      </details>
+      <p style="margin-top: 20px; font-size: 12px; color: #858585;">
+        Try reloading DevTools or <a href="https://github.com/larsoneric/json-viewer-extension/issues" style="color: #0e639c;">report this issue</a>.
+      </p>
+    </div>
+  `;
+}
 
 // Initialize internationalization
 function initializeI18n() {
@@ -56,7 +92,7 @@ function setupClearButton() {
   clearBtn.addEventListener('click', () => {
     allRequests = [];
     expandedRequests.clear();
-    updateUI();
+    updateUI(true);
   });
 }
 
@@ -76,7 +112,61 @@ function setupRequestLimitSelect() {
         expandedRequests.delete(req.timestamp);
       });
 
-      updateUI();
+      updateUI(true);
+    }
+  });
+}
+
+// Setup search/filter functionality
+function setupSearchFilter() {
+  const searchInput = document.getElementById('searchInput');
+  const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+  searchInput.addEventListener('input', (e) => {
+    searchQuery = e.target.value.toLowerCase().trim();
+
+    // Show/hide clear button
+    if (searchQuery) {
+      clearSearchBtn.classList.add('visible');
+    } else {
+      clearSearchBtn.classList.remove('visible');
+    }
+
+    applySearchFilter();
+  });
+
+  clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    searchQuery = '';
+    clearSearchBtn.classList.remove('visible');
+    applySearchFilter();
+    searchInput.focus();
+  });
+}
+
+function applySearchFilter() {
+  const requestsList = document.getElementById('requestsList');
+  const wrappers = requestsList.querySelectorAll('.request-wrapper');
+
+  if (!searchQuery) {
+    // Show all requests
+    wrappers.forEach(wrapper => wrapper.classList.remove('hidden'));
+    return;
+  }
+
+  // Filter requests by URL or method
+  wrappers.forEach((wrapper) => {
+    const timestamp = parseInt(wrapper.getAttribute('data-timestamp'), 10);
+    const reqData = allRequests.find(req => req.timestamp === timestamp);
+    if (!reqData) return;
+
+    const matchesUrl = reqData.url.toLowerCase().includes(searchQuery);
+    const matchesMethod = reqData.method.toLowerCase().includes(searchQuery);
+
+    if (matchesUrl || matchesMethod) {
+      wrapper.classList.remove('hidden');
+    } else {
+      wrapper.classList.add('hidden');
     }
   });
 }
@@ -92,15 +182,34 @@ function listenToNetworkRequests() {
 
     request.getContent((content) => {
       if (content) {
-        processRequest(request, content);
+        processRequestDebounced(request, content);
       }
     });
   });
 }
 
+// Debounced version of processRequest to handle high-frequency requests
+function processRequestDebounced(request, content) {
+  // Clear existing timeout
+  if (processRequestTimeout) {
+    clearTimeout(processRequestTimeout);
+  }
+
+  // Process immediately for first request, then debounce subsequent ones
+  if (allRequests.length === 0) {
+    processRequest(request, content);
+  } else {
+    processRequestTimeout = setTimeout(() => {
+      processRequest(request, content);
+      processRequestTimeout = null;
+    }, PROCESS_REQUEST_DEBOUNCE_MS);
+  }
+}
+
 function processRequest(request, content) {
   // Skip processing if recording is paused
   if (!isRecording) {
+    console.log('Recording paused, skipping request:', request.request.url);
     return;
   }
 
@@ -117,6 +226,8 @@ function processRequest(request, content) {
     // Find any escaped JSON properties within the response
     const escapedProperties = findEscapedJsonProperties(data);
     properties.push(...escapedProperties);
+
+    console.log(`Processing request: ${request.request.method} ${request.request.url} - Found ${properties.length} properties`);
 
     // Add to list of requests (only store what we need to avoid memory bloat)
     const requestData = {
@@ -149,11 +260,14 @@ function processRequest(request, content) {
       removed.forEach(req => {
         expandedRequests.delete(req.timestamp);
       });
+
+      console.log(`Removed ${removed.length} old requests, keeping ${requestLimit}`);
     }
 
     updateUI();
   } catch (e) {
-    // Not valid JSON or parsing error, ignore
+    // Not valid JSON or parsing error, log and ignore
+    console.debug(`Failed to parse JSON from ${request.request.url}:`, e.message);
   }
 }
 
@@ -201,7 +315,7 @@ function isEscapedJSON(str) {
   }
 }
 
-function updateUI() {
+function updateUI(forceFullRender = false) {
   const emptyState = document.getElementById('emptyState');
   const mainContent = document.getElementById('mainContent');
   const requestsList = document.getElementById('requestsList');
@@ -209,36 +323,73 @@ function updateUI() {
   if (allRequests.length === 0) {
     emptyState.style.display = 'block';
     mainContent.style.display = 'none';
+    lastRenderedCount = 0;
     return;
   }
 
   emptyState.style.display = 'none';
   mainContent.style.display = 'block';
 
-  // Update requests list
-  requestsList.innerHTML = '';
-  allRequests.forEach((reqData, index) => {
-    const wrapper = createRequestWrapper(reqData, index);
-    requestsList.appendChild(wrapper);
-  });
+  // Optimization: Only add new requests incrementally if list hasn't changed significantly
+  // Full re-render is needed when: forcing, expansion state changes, or requests were removed
+  if (forceFullRender || lastRenderedCount > allRequests.length) {
+    // Full re-render
+    requestsList.innerHTML = '';
+    allRequests.forEach((reqData, index) => {
+      const wrapper = createRequestWrapper(reqData, index);
+      requestsList.appendChild(wrapper);
+    });
+    lastRenderedCount = allRequests.length;
+  } else if (lastRenderedCount < allRequests.length) {
+    // Incremental render: Only add new requests at the beginning
+    const newRequestCount = allRequests.length - lastRenderedCount;
+    const fragment = document.createDocumentFragment();
+
+    for (let i = newRequestCount - 1; i >= 0; i--) {
+      const wrapper = createRequestWrapper(allRequests[i], i);
+      fragment.appendChild(wrapper);
+    }
+
+    // Insert new requests at the beginning
+    if (requestsList.firstChild) {
+      requestsList.insertBefore(fragment, requestsList.firstChild);
+    } else {
+      requestsList.appendChild(fragment);
+    }
+
+    lastRenderedCount = allRequests.length;
+  }
+  // If lastRenderedCount === allRequests.length, no update needed (expansion handled separately)
+
+  // Apply search filter after rendering
+  if (searchQuery) {
+    applySearchFilter();
+  }
 }
 
 function createRequestWrapper(reqData, index) {
   const wrapper = document.createElement('div');
   wrapper.className = 'request-wrapper';
+  wrapper.setAttribute('role', 'listitem');
+  wrapper.setAttribute('data-timestamp', reqData.timestamp);
 
   // Create request item (the clickable header)
   const item = document.createElement('div');
   item.className = 'request-item';
+  item.setAttribute('role', 'button');
+  item.setAttribute('tabindex', '0');
   const isExpanded = expandedRequests.has(reqData.timestamp);
   if (isExpanded) {
     item.classList.add('expanded');
   }
+  item.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+  item.setAttribute('aria-label', `${reqData.method} ${getDisplayUrl(reqData.url)}, ${reqData.properties.length} properties`);
 
   // Expand indicator
   const expandIndicator = document.createElement('span');
   expandIndicator.className = 'request-expand-indicator';
   expandIndicator.textContent = '▶';
+  expandIndicator.setAttribute('aria-hidden', 'true');
 
   const methodSpan = document.createElement('span');
   methodSpan.className = 'request-method';
@@ -279,10 +430,18 @@ function createRequestWrapper(reqData, index) {
     } else {
       expandedRequests.set(reqData.timestamp, true);
     }
-    updateUI();
+    updateUI(true); // Force full re-render when toggling expansion
   };
 
   item.addEventListener('click', clickHandler);
+
+  // Keyboard navigation support
+  item.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      clickHandler();
+    }
+  });
 
   wrapper.appendChild(item);
   wrapper.appendChild(expandedContent);
@@ -351,7 +510,7 @@ function createPropertyItem(prop) {
   // Preview
   const previewDiv = document.createElement('div');
   previewDiv.className = 'property-preview';
-  previewDiv.textContent = truncate(prop.value, 200);
+  previewDiv.textContent = truncate(prop.value, TRUNCATE_LENGTH);
   previewDiv.title = prop.value;
   div.appendChild(previewDiv);
 
@@ -366,11 +525,12 @@ function createPropertyItem(prop) {
   const formatBtn = document.createElement('button');
   formatBtn.className = 'format-btn';
   formatBtn.textContent = t('formatButton');
+  formatBtn.setAttribute('aria-label', `Format JSON for ${prop.path}`);
   formatBtn.addEventListener('click', () => {
     if (isFormatted) {
       // Collapse
       previewDiv.className = 'property-preview';
-      previewDiv.textContent = truncate(prop.value, 200);
+      previewDiv.textContent = truncate(prop.value, TRUNCATE_LENGTH);
       formatBtn.textContent = t('formatButton');
       isFormatted = false;
     } else {
@@ -391,6 +551,7 @@ function createPropertyItem(prop) {
   const copyBtn = document.createElement('button');
   copyBtn.className = 'copy-btn';
   copyBtn.textContent = t('copyButton');
+  copyBtn.setAttribute('aria-label', `Copy JSON from ${prop.path} to clipboard`);
   copyBtn.addEventListener('click', () => {
     const textToCopy = isFormatted ? formattedText : prop.value;
     copyToClipboard(textToCopy, prop.path);
@@ -403,8 +564,26 @@ function createPropertyItem(prop) {
   return div;
 }
 
-function copyToClipboard(text, path) {
-  // Use the older execCommand method which works better in extension contexts
+async function copyToClipboard(text, path) {
+  // Try modern Clipboard API first, fall back to execCommand for compatibility
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      showNotification(t('copiedSuccess', { path: path }));
+      console.log('Copied to clipboard using Clipboard API:', path);
+    } else {
+      // Fallback to execCommand for non-secure contexts or unsupported browsers
+      copyToClipboardFallback(text, path);
+    }
+  } catch (err) {
+    console.error('Clipboard API failed, using fallback:', err);
+    // If modern API fails, try fallback
+    copyToClipboardFallback(text, path);
+  }
+}
+
+function copyToClipboardFallback(text, path) {
+  // Use the older execCommand method as fallback
   const textarea = document.createElement('textarea');
   textarea.value = text;
   textarea.style.position = 'fixed';
@@ -416,8 +595,10 @@ function copyToClipboard(text, path) {
     const successful = document.execCommand('copy');
     if (successful) {
       showNotification(t('copiedSuccess', { path: path }));
+      console.log('Copied to clipboard using execCommand fallback:', path);
     } else {
       showNotification(t('copyFailed'), true);
+      console.error('execCommand copy failed for:', path);
     }
   } catch (err) {
     console.error('Failed to copy:', err);
@@ -434,15 +615,26 @@ function showNotification(message, isError = false) {
 
   document.body.appendChild(notification);
 
-  // Store timeout ID for potential cleanup
+  // Auto-remove after timeout
   const timeoutId = setTimeout(() => {
     if (notification.parentNode) {
       notification.remove();
     }
-  }, 3000);
+  }, NOTIFICATION_TIMEOUT_MS);
 
-  // Clean up if notification is removed early
-  notification.dataset.timeoutId = timeoutId;
+  // Clean up timeout if notification is removed manually
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.removedNodes.forEach((node) => {
+        if (node === notification) {
+          clearTimeout(timeoutId);
+          observer.disconnect();
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, { childList: true });
 }
 
 function getDisplayUrl(url) {
@@ -546,8 +738,24 @@ function buildRequestDetails(reqData, container) {
 
 function formatTimestamp(timestamp) {
   const date = new Date(timestamp);
+  const now = new Date();
+
+  // Check if timestamp is from today
+  const isToday = date.getDate() === now.getDate() &&
+                  date.getMonth() === now.getMonth() &&
+                  date.getFullYear() === now.getFullYear();
+
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
   const seconds = date.getSeconds().toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
+  const timeString = `${hours}:${minutes}:${seconds}`;
+
+  if (isToday) {
+    return timeString;
+  } else {
+    // Include date if not today
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${month}/${day} ${timeString}`;
+  }
 }
