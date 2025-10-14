@@ -4,7 +4,6 @@
 const DEFAULT_REQUEST_LIMIT = 20;
 const TRUNCATE_LENGTH = 200;
 const NOTIFICATION_TIMEOUT_MS = 3000;
-const PROCESS_REQUEST_DEBOUNCE_MS = 100;
 
 // State
 let allRequests = []; // Store all requests with escaped JSON
@@ -13,7 +12,6 @@ let expandedRequests = new Map(); // Track which requests are expanded (using ti
 let requestLimit = DEFAULT_REQUEST_LIMIT; // Default limit for stored requests
 let lastRenderedCount = 0; // Track how many requests were last rendered for incremental updates
 let searchQuery = ''; // Current search query
-let processRequestTimeout = null; // For debouncing request processing
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -182,28 +180,10 @@ function listenToNetworkRequests() {
 
     request.getContent((content) => {
       if (content) {
-        processRequestDebounced(request, content);
+        processRequest(request, content);
       }
     });
   });
-}
-
-// Debounced version of processRequest to handle high-frequency requests
-function processRequestDebounced(request, content) {
-  // Clear existing timeout
-  if (processRequestTimeout) {
-    clearTimeout(processRequestTimeout);
-  }
-
-  // Process immediately for first request, then debounce subsequent ones
-  if (allRequests.length === 0) {
-    processRequest(request, content);
-  } else {
-    processRequestTimeout = setTimeout(() => {
-      processRequest(request, content);
-      processRequestTimeout = null;
-    }, PROCESS_REQUEST_DEBOUNCE_MS);
-  }
 }
 
 function processRequest(request, content) {
