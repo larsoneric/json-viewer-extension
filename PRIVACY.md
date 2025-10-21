@@ -1,10 +1,16 @@
 # Privacy Policy for JSON Viewer Chrome Extension
 
-**Last Updated:** October 13, 2025
+**Last Updated:** October 21, 2025
+
+**Developer:** Eric Larson
+**Extension:** JSON Viewer
+**Version:** 1.0.0
 
 ## Overview
 
 JSON Viewer is a Chrome DevTools extension that helps developers view and format JSON data from network responses. We are committed to protecting your privacy and being transparent about our data practices.
+
+**Short Summary:** This extension does NOT collect, store, transmit, or share any user data. All processing happens locally in your browser.
 
 ## Data Collection and Usage
 
@@ -82,10 +88,51 @@ If you have questions or concerns about this privacy policy or the extension's d
 
 This extension is open source. You can review the complete source code to verify our privacy practices at: https://github.com/larsoneric/json-viewer-extension
 
+## Chrome Web Store Compliance
+
+This extension complies with the [Chrome Web Store Developer Program Policies](https://developer.chrome.com/docs/webstore/program-policies/), including:
+
+### Limited Use Policy Compliance
+- **No data collection**: We do not collect any user data
+- **Minimal permissions**: We only request the minimum permissions necessary (clipboardWrite)
+- **No remote code**: All code is packaged within the extension; no code is loaded from external sources
+- **Transparent practices**: This privacy policy accurately describes all data handling
+
+### User Data Policy Compliance
+- **No sale of user data**: We do not sell user data (we don't collect any)
+- **No use for advertising**: We do not use data for advertising purposes
+- **No third-party sharing**: We do not share data with third parties
+- **Not for creditworthiness**: We do not use data to determine creditworthiness or lending purposes
+
+### Single Purpose Policy Compliance
+This extension has a single, well-defined purpose: to provide a DevTools panel for viewing, formatting, and copying JSON from network responses with automatic detection of escaped JSON strings.
+
 ## Your Consent
 
-By using the JSON Viewer extension, you consent to this privacy policy.
+By installing and using the JSON Viewer extension, you consent to this privacy policy.
 
 ## Summary
 
 **In plain English**: This extension only works locally in your browser. It reads network responses to help you format JSON data, and can copy that data to your clipboard. It never sends your data anywhere, doesn't track you, and doesn't store anything permanently. When you close DevTools, everything is gone.
+
+---
+
+## Privacy Practices Disclosure (Chrome Web Store)
+
+For Chrome Web Store submission requirements:
+
+**Does this extension collect user data?**
+No. This extension does not collect, store, transmit, or share any user data.
+
+**Does this extension use remote code?**
+No. All code is packaged within the extension.
+
+**Data handling:**
+- No user data is collected
+- No user data is stored
+- No user data is transmitted
+- No user data is sold
+- No user data is used for purposes unrelated to the extension's core functionality
+
+**Permission usage:**
+- `clipboardWrite`: Used only when user clicks the "Copy" button to copy JSON to clipboard
