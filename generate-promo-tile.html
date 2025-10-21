@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Viewer Promotional Tile</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .instructions {
+      max-width: 440px;
+      margin: 0 auto 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .instructions h3 {
+      margin-top: 0;
+      color: #667eea;
+    }
+
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin: 8px 0;
+    }
+
+    .promo-container {
+      margin: 0 auto;
+      width: 440px;
+    }
+
+    .promo {
+      width: 440px;
+      height: 280px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    /* Decorative elements */
+    .promo::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+
+    .promo::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -5%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+
+    .content-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .icon-container {
+      flex-shrink: 0;
+    }
+
+    .icon {
+      width: 128px;
+      height: 128px;
+      border-radius: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon img {
+      width: 128px;
+      height: 128px;
+      border-radius: 24px;
+    }
+
+    .content {
+      color: white;
+      flex: 1;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 36px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      margin: 0 0 20px 0;
+      font-size: 16px;
+      opacity: 0.95;
+      font-weight: 500;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .features {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .features li {
+      margin: 8px 0;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .features li::before {
+      content: '✓';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 50%;
+      text-align: center;
+      line-height: 20px;
+      margin-right: 10px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .screenshot-note {
+      max-width: 440px;
+      margin: 20px auto 0;
+      padding: 15px;
+      background: #fff3cd;
+      border-radius: 8px;
+      border-left: 4px solid #ffc107;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="instructions">
+    <h3>📸 How to Create Your Promotional Tile</h3>
+    <ol>
+      <li><strong>Screenshot the tile below</strong> (just the purple gradient box)</li>
+      <li><strong>On Mac</strong>: Press Cmd+Shift+4, then press Space, click on the browser window</li>
+      <li><strong>On Windows</strong>: Use Snipping Tool or Press Win+Shift+S</li>
+      <li><strong>Save as</strong>: <code>promo-tile-440x280.png</code></li>
+      <li><strong>Upload to Chrome Web Store</strong> in the "Store Listing" section</li>
+    </ol>
+  </div>
+
+  <div class="promo-container">
+    <div class="promo">
+      <div class="content-wrapper">
+        <div class="icon-container">
+          <div class="icon">
+            <img src="icon128.png" alt="JSON Viewer Icon">
+          </div>
+        </div>
+        <div class="content">
+          <h1>JSON Viewer</h1>
+          <p class="subtitle">DevTools for JSON Developers</p>
+          <ul class="features">
+            <li>Auto-detect escaped JSON</li>
+            <li>Syntax highlighting</li>
+            <li>One-click copy to clipboard</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screenshot-note">
+    <strong>💡 Tip:</strong> The tile is exactly 440x280 pixels. Make sure your screenshot captures just the purple gradient box (not the instructions or this note). You can also use browser dev tools to take a perfect screenshot: Right-click the purple box → Inspect → Right-click the element in DevTools → Capture node screenshot.
+  </div>
+</body>
+</html>

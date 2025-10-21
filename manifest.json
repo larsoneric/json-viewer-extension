@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "JSON Viewer",
   "version": "1.0.0",
-  "description": "DevTools panel for viewing, formatting, and copying JSON from network responses. Automatically detects escaped JSON strings with syntax highlighting and easy clipboard access.",
+  "description": "View and format JSON from network responses. Auto-detects escaped JSON with syntax highlighting and easy clipboard access.",
   "devtools_page": "devtools.html",
   "homepage_url": "https://github.com/larsoneric/json-viewer-extension",
   "permissions": [

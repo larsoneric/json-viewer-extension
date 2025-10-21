@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Viewer Marquee Tile (1400x560)</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .instructions {
+      max-width: 1400px;
+      margin: 0 auto 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .instructions h3 {
+      margin-top: 0;
+      color: #667eea;
+    }
+
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin: 8px 0;
+    }
+
+    .instructions strong {
+      color: #d32f2f;
+    }
+
+    .marquee-container {
+      margin: 0 auto;
+      width: 1400px;
+    }
+
+    .marquee {
+      width: 1400px;
+      height: 560px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 60px 80px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    /* Decorative background elements */
+    .marquee::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      right: -5%;
+      width: 600px;
+      height: 600px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .marquee::after {
+      content: '';
+      position: absolute;
+      bottom: -25%;
+      left: 10%;
+      width: 400px;
+      height: 400px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+
+    /* JSON showcase - before and after */
+    .json-showcase {
+      position: absolute;
+      right: 50px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 580px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .json-panel {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      position: relative;
+      backdrop-filter: blur(10px);
+    }
+
+    .json-panel-header {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .json-panel code {
+      display: block;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .json-panel .key {
+      color: #90caf9;
+    }
+
+    .json-panel .string {
+      color: #ffcc80;
+    }
+
+    .json-panel .string-escaped {
+      color: #ffcc80;
+      background: rgba(255,193,7,0.15);
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .json-panel .number {
+      color: #a5d6a7;
+    }
+
+    .json-panel .bracket {
+      color: rgba(255,255,255,0.8);
+    }
+
+    .arrow-indicator {
+      text-align: center;
+      font-size: 24px;
+      color: rgba(255,255,255,0.5);
+      font-weight: 300;
+    }
+
+    .extracted-badge {
+      position: absolute;
+      top: -8px;
+      right: 15px;
+      background: #4caf50;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .content-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 650px;
+    }
+
+    .branding {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    .icon {
+      width: 128px;
+      height: 128px;
+      border-radius: 28px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+      background: white;
+    }
+
+    .icon img {
+      width: 128px;
+      height: 128px;
+      border-radius: 28px;
+    }
+
+    .title-group h1 {
+      margin: 0;
+      font-size: 64px;
+      font-weight: 800;
+      color: white;
+      text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      letter-spacing: -1.5px;
+    }
+
+    .title-group .tagline {
+      margin: 8px 0 0 0;
+      font-size: 24px;
+      color: rgba(255,255,255,0.95);
+      font-weight: 500;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px 30px;
+      margin-top: 40px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      color: white;
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .feature-content h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .feature-content p {
+      margin: 5px 0 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      line-height: 1.4;
+    }
+
+    .cta {
+      margin-top: 40px;
+      padding: 16px 32px;
+      background: white;
+      color: #667eea;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      display: inline-block;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      text-shadow: none;
+    }
+
+    .screenshot-note {
+      max-width: 1400px;
+      margin: 20px auto 0;
+      padding: 15px;
+      background: #fff3cd;
+      border-radius: 8px;
+      border-left: 4px solid #ffc107;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="instructions">
+    <h3>📸 How to Create Your Marquee Tile (1400x560)</h3>
+    <ol>
+      <li><strong>Right-click on the tile below</strong> and select "Inspect"</li>
+      <li><strong>In DevTools</strong>, find the element with class "marquee"</li>
+      <li><strong>Right-click that element</strong> in DevTools → "Capture node screenshot"</li>
+      <li><strong>IMPORTANT:</strong> Save as <code>marquee-tile-1400x560.png</code></li>
+      <li><strong>Note:</strong> Chrome Web Store requires JPEG or 24-bit PNG (no transparency). The screenshot will be PNG with a solid background - perfect!</li>
+    </ol>
+  </div>
+
+  <div class="marquee-container">
+    <div class="marquee">
+      <div class="json-showcase">
+        <!-- Before: API Response with escaped JSON -->
+        <div class="json-panel">
+          <div class="json-panel-header">API Response (Raw)</div>
+          <code><span class="bracket">{</span></code>
+          <code>&nbsp;&nbsp;<span class="key">"status"</span>: <span class="string">"success"</span>,</code>
+          <code>&nbsp;&nbsp;<span class="key">"user"</span>: <span class="string-escaped">"{\"id\":123,\"name\":\"John\",\"role\":\"admin\"}"</span>,</code>
+          <code>&nbsp;&nbsp;<span class="key">"timestamp"</span>: <span class="number">1705334400</span></code>
+          <code><span class="bracket">}</span></code>
+        </div>
+
+        <!-- Arrow indicator -->
+        <div class="arrow-indicator">↓ Extracted & Formatted</div>
+
+        <!-- After: Extracted and formatted JSON -->
+        <div class="json-panel">
+          <div class="extracted-badge">✓ Auto-detected</div>
+          <div class="json-panel-header">Property: user (Formatted)</div>
+          <code><span class="bracket">{</span></code>
+          <code>&nbsp;&nbsp;<span class="key">"id"</span>: <span class="number">123</span>,</code>
+          <code>&nbsp;&nbsp;<span class="key">"name"</span>: <span class="string">"John"</span>,</code>
+          <code>&nbsp;&nbsp;<span class="key">"role"</span>: <span class="string">"admin"</span></code>
+          <code><span class="bracket">}</span></code>
+        </div>
+      </div>
+
+      <div class="content-wrapper">
+        <div class="branding">
+          <div class="icon">
+            <img src="icon128.png" alt="JSON Viewer Icon">
+          </div>
+          <div class="title-group">
+            <h1>JSON Viewer</h1>
+            <p class="tagline">Professional JSON Tools for Chrome DevTools</p>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-item">
+            <div class="feature-icon">🔍</div>
+            <div class="feature-content">
+              <h3>Auto-Detect Escaped JSON</h3>
+              <p>Finds stringified JSON automatically</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">🎨</div>
+            <div class="feature-content">
+              <h3>Syntax Highlighting</h3>
+              <p>Color-coded formatting</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">📋</div>
+            <div class="feature-content">
+              <h3>One-Click Copy</h3>
+              <p>Instant clipboard access</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-content">
+              <h3>Real-time Monitoring</h3>
+              <p>Tracks all JSON responses</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screenshot-note">
+    <strong>💡 Pro Tip:</strong> Using "Capture node screenshot" in DevTools ensures you get exactly 1400x560 pixels with no transparency. The image will have a solid gradient background (no alpha channel), which is exactly what Chrome Web Store requires for Marquee tiles!
+  </div>
+</body>
+</html>

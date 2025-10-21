@@ -2,6 +2,10 @@
 
 A Chrome DevTools extension that helps you view and copy escaped JSON strings from network responses with proper formatting.
 
+## Demo
+
+![JSON Viewer Demo](json-viewer-demo.gif)
+
 ## Features
 
 - **Automatic Network Monitoring**: Automatically monitors all JSON network requests
