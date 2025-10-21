@@ -62,31 +62,21 @@ View and format JSON from network responses. Auto-detects escaped JSON with synt
 
 **Detailed Description** (suggested):
 ```
-JSON Viewer for Chrome DevTools
+A DevTools panel that automatically monitors network responses and helps you view, format, and copy data with syntax highlighting.
 
-A powerful DevTools extension that helps developers work with JSON APIs by automatically monitoring network responses and providing formatting, syntax highlighting, and quick clipboard access.
+This extension adds a new tab to Chrome DevTools that watches for network requests and displays them in an easy-to-navigate list. When you click on a request, you can view the full response with color-coded syntax highlighting, making it easier to read and understand API responses.
 
-KEY FEATURES:
-✓ Automatic Network Monitoring - Monitors all JSON responses
-✓ Escaped JSON Detection - Finds nested escaped JSON strings
-✓ Syntax Highlighting - Color-coded JSON for readability
-✓ One-Click Copy - Copy formatted or raw JSON to clipboard
-✓ Search & Filter - Filter requests by URL or HTTP method
-✓ Recording Controls - Pause/resume to freeze the request list
-✓ Keyboard Accessible - Full keyboard navigation support
-✓ Privacy Focused - All processing happens locally, no data leaves your browser
+Features include:
+- Automatic detection of escaped strings in responses
+- One-click formatting with syntax highlighting
+- Copy to clipboard (formatted or raw)
+- Search and filter by URL or method
+- Recording controls to pause and review
+- Full keyboard navigation
 
-PERFECT FOR:
-• API Development & Debugging
-• Testing JSON responses
-• Working with complex nested JSON
-• Finding escaped JSON strings in responses
-• Quick JSON formatting and copying
+Perfect for developers debugging APIs, testing integrations, or working with complex nested data structures. All processing happens locally in your browser - no data is sent to external servers.
 
-PRIVACY:
-This extension processes all data locally in your browser. No data is transmitted to external servers. See our privacy policy for details.
-
-Open source: https://github.com/larsoneric/json-viewer-extension
+Open source at https://github.com/larsoneric/json-viewer-extension
 ```
 
 **Category:** Developer Tools
