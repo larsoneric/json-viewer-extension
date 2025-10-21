@@ -23,33 +23,6 @@ A Chrome DevTools extension that helps you view and copy escaped JSON strings fr
 - **Accessibility**: ARIA labels, screen reader support, and keyboard shortcuts
 - **Multilingual Support**: Built-in internationalization system (currently English)
 
-## Installation
-
-1. Create icon files (required):
-
-   **Easiest method**: Open `generate-icons.html` in your browser, click "Generate Icons", then download each PNG file (icon16.png, icon48.png, icon128.png) and save them in the extension directory.
-
-   **Alternative methods**:
-   ```bash
-   # Using ImageMagick:
-   convert icon.svg -resize 16x16 icon16.png
-   convert icon.svg -resize 48x48 icon48.png
-   convert icon.svg -resize 128x128 icon128.png
-   ```
-
-   Or use an online SVG to PNG converter like:
-   - https://cloudconvert.com/svg-to-png
-   - https://convertio.co/svg-png/
-
-2. Load the extension in Chrome:
-   - Open Chrome and go to `chrome://extensions/`
-   - Enable "Developer mode" (toggle in the top right)
-   - Click "Load unpacked"
-   - Select this directory
-
-3. Open DevTools (F12 or Cmd+Option+I on Mac)
-4. You'll see a new "JSON Viewer" tab in DevTools
-
 ## Usage
 
 1. Open Chrome DevTools (F12 or Cmd+Option+I)
@@ -209,17 +182,6 @@ const translations = {
 
 Then call `setLanguage('es')` to switch languages.
 
-## Publishing to Chrome Web Store
-
-This extension is ready for publication! Before submitting:
-
-1. ✅ **Privacy Policy**: See [PRIVACY.md](PRIVACY.md) for the privacy policy
-2. ✅ **Store Assets**: Create promotional screenshots showing the extension in action
-   - At least 1 screenshot (1280x800 or 640x400)
-   - Recommended: Small promo tile (440x280)
-3. ✅ **Homepage URL**: https://github.com/larsoneric/json-viewer-extension
-4. ✅ **Support**: Report issues at https://github.com/larsoneric/json-viewer-extension/issues
-
 ## Browser Compatibility
 
 - Chrome 88+ (Manifest V3 support)
@@ -233,8 +195,6 @@ This extension is ready for publication! Before submitting:
 - Maximum request history: 100 requests
 
 ## Troubleshooting
-
-**Extension won't load**: Make sure you've created the icon PNG files (icon16.png, icon48.png, icon128.png). Use `generate-icons.html` to create them easily.
 
 **Panel shows "Waiting for Network Requests"**: Make network requests in your application. The extension monitors all JSON responses (Content-Type: application/json or javascript).
 
